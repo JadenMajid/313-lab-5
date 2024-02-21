@@ -27,8 +27,8 @@ get_element:
 	# addq   %rdi, %rdi
 	# addq   %rdi, %rdi
 
-	irmovq $4, %rcx
-	mulq %rcx, %rdi
+	irmovq $4, %rdx
+	mulq %rdx, %rdi
 	mrmovq heap(%rdi), %rax
 	ret
 	
@@ -42,8 +42,8 @@ put_element:
 	# addq   %rdi, %rdi
 	# addq   %rdi, %rdi
 
-	irmovq $4, %rcx
-	mulq %rcx, %rdi
+	irmovq $4, %rdx
+	mulq %rdx, %rdi
 
 	rmmovq %rsi, heap(%rdi)
 	ret
