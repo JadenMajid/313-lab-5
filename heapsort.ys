@@ -23,9 +23,12 @@ main:
 #     %rax: the element
 
 get_element:
-	addq   %rdi, %rdi
-	addq   %rdi, %rdi
-	addq   %rdi, %rdi
+	# addq   %rdi, %rdi
+	# addq   %rdi, %rdi
+	# addq   %rdi, %rdi
+
+	irmovq $4, %rcx
+	mulq %rcx, %rdi
 	mrmovq heap(%rdi), %rax
 	ret
 	
@@ -35,9 +38,13 @@ get_element:
 #     %rsi: element
 
 put_element:
-	addq   %rdi, %rdi
-	addq   %rdi, %rdi
-	addq   %rdi, %rdi
+	# addq   %rdi, %rdi
+	# addq   %rdi, %rdi
+	# addq   %rdi, %rdi
+
+	irmovq $4, %rcx
+	mulq %rcx, %rdi
+
 	rmmovq %rsi, heap(%rdi)
 	ret
 
@@ -79,7 +86,7 @@ check_child:
 	pushq  %rbx
 
 	rrmovq %rdi, %rbx       # if child <= last, we can continue
-	subq   %rdx, %rbx
+	subq   %rbx, %rdx
 	jle     check_child_continue
 
 	xorq %rax, %rax
