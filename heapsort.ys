@@ -102,24 +102,20 @@ check_child:
 	ret
 
 check_child_continue:
-    irmovq $8, %rax
-    mulq %rax, %rdi
+    irmovq $8, %r8
+    irmovq $1, %rdx
+    xorq %rax, %rax
+    
+    mulq %r8, %rdi
     rrmovq %rsi, %rbx      # get heap[highest]
-    mulq %rax, %rbx
+    mulq %r8, %rbx
 
 	mrmovq heap(%rdi), %rcx
 	mrmovq heap(%rbx), %rbx    
 
 	subq   %rbx, %rcx      # if heap[child] > heap[highest], return 1
-	jg     check_child_output_one
-	
-	xorq   %rax, %rax      # return 0
-	jmp check_child_finish
+	cmovg  %rdx, %rax
 
-check_child_output_one:        # return 1
-	irmovq $1,   %rax
-
-check_child_finish:
 	popq %rbx
 	ret
 
