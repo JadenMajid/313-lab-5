@@ -229,21 +229,21 @@ heapify_array:
 	
 ha_loop:
 	andq   %rbx, %rbx       # check if i < 0
-	jge     ha_continue
-	popq   %rbx
-	popq   %r12
-	ret
-
-ha_continue:
+	jl     ha_ret
+	
 	rrmovq %rbx, %rdi       # Set %rdi = i, %rsi = last      
 	rrmovq %r12, %rsi
-	pushq  %rdi
 	call   heapify_node     # Heapify the node
-        popq   %rdi
 	
 	irmovq $1, %rdi         # i--
 	subq   %rdi, %rbx
 	jmp    ha_loop
+
+ha_ret:
+    popq   %rbx
+    popq   %r12
+    ret
+	
 	
 #
 # Extract_max
@@ -294,7 +294,7 @@ heapsort:
 hs_loop:
 	andq   %rbx, %rbx
     jl     hs_ret
-
+    
     rrmovq %rbx, %rdi       # max = extract_max(i)
 	call   extract_max
 	rrmovq %rbx, %rsi       # heap[i] = max
@@ -310,6 +310,7 @@ hs_loop:
 hs_ret:	
     popq   %rbx
 	ret
+
 
 #
 # Array to sort
