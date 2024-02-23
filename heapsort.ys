@@ -10,9 +10,8 @@
 
 main:	
 	xorq   %rdi, %rdi        # %rdi = 0
-	mrmovq size(%rdi), %rdi  # %rdi = size
-	
 	irmovq bottom,  %rsp     # initialize stack
+	mrmovq size(%rdi), %rdi  # %rdi = size
 	call   heapsort
 	halt
 
@@ -293,25 +292,23 @@ heapsort:
 	call   heapify_array    # heapify_array(last)
 
 hs_loop:
-	andq   %rbx, %rbx	# Test if i < 0
-	jge     hs_continue
-hs_ret:	popq   %rbx
-	ret
+	andq   %rbx, %rbx
+    jl     hs_ret
 
-hs_continue:
-	rrmovq %rbx, %rdi       # max = extract_max(i)
+    rrmovq %rbx, %rdi       # max = extract_max(i)
 	call   extract_max
-
 	rrmovq %rbx, %rsi       # heap[i] = max
-	addq   %rsi, %rsi
-	addq   %rsi, %rsi
-	addq   %rsi, %rsi
-        rmmovq %rax, heap(%rsi)
-
-	irmovq $1, %rdi         # i--
+	
+	irmovq $8, %r11
+	mulq   %r11, %rsi
+    rmmovq %rax, heap(%rsi)
+    
+    irmovq $1, %rdi         # i--
 	subq   %rdi, %rbx
 	jmp    hs_loop
-	popq   %rbx
+    
+hs_ret:	
+    popq   %rbx
 	ret
 
 #
