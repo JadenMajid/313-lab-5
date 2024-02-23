@@ -104,14 +104,11 @@ check_child:
 check_child_continue:
     irmovq $8, %rax
     mulq %rax, %rdi
+    rrmovq %rsi, %rbx      # get heap[highest]
+    mulq %rax, %rbx
 
 	mrmovq heap(%rdi), %rcx
-
-
-	rrmovq %rsi, %rdi      # get heap[highest]
-    mulq %rax, %rdi
-
-	mrmovq heap(%rdi), %rbx    
+	mrmovq heap(%rbx), %rbx    
 
 	subq   %rbx, %rcx      # if heap[child] > heap[highest], return 1
 	jg     check_child_output_one
@@ -145,9 +142,10 @@ heapify_node:
 	rrmovq %rdi, %rbx
 
 heapify_loop:
+	irmovq $1,   %r8
 	rrmovq %rbx, %rdi       # left_child = 2 * index + 1
 	addq   %rdi, %rdi
-	irmovq $1,   %r8
+
 	addq   %r8,  %rdi
 	rrmovq %r12, %rsi
 	rrmovq %r13, %rdx
@@ -292,8 +290,9 @@ extract_max:
 #    %rdi: Number of entries in the array
 #
 heapsort:
-	pushq  %rbx
 	irmovq 1, %rsi
+	pushq  %rbx
+
 	subq   %rsi, %rdi	# %rdi is now the index of the last element
 	jle    hs_ret		# If there were 1 or 0 entries, we are done
 	rrmovq %rdi, %rbx       # %rbx (i) = last
