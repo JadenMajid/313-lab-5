@@ -149,12 +149,10 @@ heapify_loop:
 	pushq  %rdi             # save this as we'll need it after the call
 	call   check_child
 	popq   %rdi
+	
 	andq   %rax, %rax
+	cmovne %rdi, %r12  
 
-	je     heapify_skip1    # highest = left_child (if condition ok)
-	rrmovq %rdi, %r12       
-
-heapify_skip1:
 	rrmovq %rbx, %rdi       # right_child = 2 * index + 2
 	addq   %rdi, %rdi
 	irmovq $2,   %r8	
@@ -166,10 +164,8 @@ heapify_skip1:
 	call   check_child
 	popq  %rdi
 	andq   %rax, %rax
-	je     heapify_skip2
-	rrmovq %rdi, %r12       # highest = right_child (if condition ok)
+	cmovne %rdi, %r12
 
-heapify_skip2:
 	rrmovq %r12, %rdi
 	subq   %rbx, %rdi
 	jne     heapify_continue
