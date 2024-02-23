@@ -170,20 +170,18 @@ heapify_loop:
 	subq   %rbx, %rdi
 	je     heapify_end
 	irmovq $8, %rax
+	
 
+
+	# START SWAP TODO: optimize out some pushqs and popqs, can probs do 
 	rrmovq %r12, %rdi
 	rrmovq %rbx, %rsi
-	
-
-
-	# call   swap
 	pushq  %r12             # Callee save register
-	mulq %rax, %rdi
-	pushq  %rbx             # Save these too as we'll need them later
-	pushq  %r12
+	pushq  %rsi             # Save these too as we'll need them later
+	pushq  %rdi
 	
-
-
+    irmovq $8, %rax
+    mulq %rax, %rdi
 
 	mrmovq heap(%rdi), %r12
 	
@@ -202,9 +200,10 @@ heapify_loop:
     
 	rmmovq %r12, heap(%rdi)
 
-	popq %rbx
+	popq %r12
+	#END SWAP
 
-	rrmovq %rbx, %r12
+	rrmovq %r12, %rbx
 	jmp    heapify_loop
 
 heapify_end:
