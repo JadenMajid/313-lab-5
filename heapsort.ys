@@ -70,34 +70,31 @@ swap:
 
 #
 # Check_child
-#     %rdi: child index
-#     %rsi: index of highest
-#     %rdx: last
+#     %rdi: child index * 8 
+#     %rsi: index of highest * 8 
+#     %rdx: last * 8 
 # Returns:
 #     %rax: true if child <= last && heap[highest] < heap[child]
 #
 check_child:
 	rrmovq %rdi, %r11       # if child <= last, we can continue
 	subq   %rdx, %r11
-	jle     check_child_continue
+	jg     check_child_end
 
-	xorq %rax, %rax
-	ret
-
-check_child_continue:
-    irmovq $8, %r8
-	rrmovq %rsi, %r11      # get heap[highest]
     irmovq $1, %rdx
     xorq %rax, %rax
     
-    mulq %r8, %rdi
-    mulq %r8, %r11
+
 
 	mrmovq heap(%rdi), %rcx
-	mrmovq heap(%r11), %r11    
+	mrmovq heap(%rsi), %rsi    
 
-	subq   %r11, %rcx      # if heap[child] > heap[highest], return 1
+	subq   %rsi, %rcx      # if heap[child] > heap[highest], return 1
 	cmovg  %rdx, %rax
+	ret
+	
+check_child_end:
+	xorq %rax, %rax
 	ret
 
 #
@@ -117,17 +114,22 @@ heapify_node:
 	rrmovq %rdi, %r12       # %r12 = highest
 	rrmovq %rsi, %r13       # %r13 = last
 	rrmovq %rdi, %rbx
+	
+    irmovq $1, %rdx
+    irmovq $8, %r8
 
 heapify_loop:
-	irmovq $1,   %r8
 	rrmovq %rbx, %rdi       # left_child = 2 * index + 1
 	addq   %rdi, %rdi
 
-	addq   %r8,  %rdi
+	addq   %rdx,  %rdi
 	rrmovq %r12, %rsi
 	rrmovq %r13, %rdx
 
 	pushq  %rdi             # save this as we'll need it after the call
+	mulq %r8, %rdi
+    mulq %r8, %rsi
+    mulq %r8, %rdx
 	call   check_child
 	popq   %rdi
 	
@@ -135,13 +137,16 @@ heapify_loop:
 	cmovne %rdi, %r12  
 
 	rrmovq %rbx, %rdi       # right_child = 2 * index + 2
+	addq   %rdx,  %rdi
 	addq   %rdi, %rdi
-	irmovq $2,   %r8	
-	addq   %r8,  %rdi
+
 	rrmovq %r12, %rsi
 	rrmovq %r13, %rdx
 
 	pushq  %rdi             # save this as we'll need it after the call
+	mulq %r8, %rdi
+    mulq %r8, %rsi
+    mulq %r8, %rdx
 	call   check_child
 	popq  %rdi
 	andq   %rax, %rax
@@ -158,9 +163,8 @@ heapify_loop:
 
 	#call   swap
 	
-	irmovq $8, %r8
-    mulq %r8, %rdi          # rdi = i1
-    mulq %r8, %rsi          # rsi = i2
+    mulq %r8, %rdi          # rdi = i1*8
+    mulq %r8, %rsi          # rsi = i2*8
 
 	mrmovq heap(%rdi), %r10 #.  r10 = heap[i1]
 	mrmovq heap(%rsi), %r11  #  r11 = heap[i2]
@@ -216,13 +220,13 @@ extract_max:
     pushq  %rdi             # Save this as we'll need it later
 	
 	xorq   %rdi, %rdi       # max = heap[0]
-    irmovq $8, %rax
-    mulq %rax, %rdi
+    irmovq $8, %r8
+    mulq %r8, %rdi
 
 	mrmovq heap(%rdi), %rbx
 
 	mrmovq 0(%rsp), %rdi    # Recover %rdi, but leave it on the stack too.
-    mulq %rax, %rdi
+    mulq %r8, %rdi
 
 	mrmovq heap(%rdi), %rax
 
