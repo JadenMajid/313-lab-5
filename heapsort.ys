@@ -177,8 +177,6 @@ heapify_loop:
 	pushq  %r12
 	
 
-
-
 	mrmovq heap(%rdi), %r12
 	
 	rrmovq %rsi, %rdi       # tmp2 = heap[index2]
@@ -212,31 +210,27 @@ heapify_end:
 #     %rdi: last
 #
 heapify_array:
-	pushq  %r12             # Save %r12 and use it to store 'last'
-	pushq  %rbx             # Save %rbx before using it for i
-	rrmovq %rdi, %r12
+	rrmovq %rdi, %r10		# store last in %r10
 
 	irmovq $1, %rsi		# %rdi = last - 1
 	subq   %rsi, %rdi
 	irmovq $2, %rsi		# %rdi = (last - 1)/2
 	divq   %rsi, %rdi
-	rrmovq %rdi, %rbx       # i = %rdi
+	rrmovq %rdi, %r9       # i = %rdi
 	
 ha_loop:
-	andq   %rbx, %rbx       # check if i < 0
+	andq   %r9, %r9       # check if i < 0
 	jl     ha_ret
 	
-	rrmovq %rbx, %rdi       # Set %rdi = i, %rsi = last      
-	rrmovq %r12, %rsi
+	rrmovq %r9, %rdi       # Set %rdi = i, %rsi = last      
+	rrmovq %r10, %rsi
 	call   heapify_node     # Heapify the node
 	
 	irmovq $1, %rdi         # i--
-	subq   %rdi, %rbx
+	subq   %rdi, %r9
 	jmp    ha_loop
 
 ha_ret:
-    popq   %rbx
-    popq   %r12
     ret
 	
 	
@@ -246,8 +240,8 @@ ha_ret:
 #
 extract_max:
 	pushq  %rbx		# Save %rax before using it for max
-
     pushq  %rdi             # Save this as we'll need it later
+	
 	xorq   %rdi, %rdi       # max = heap[0]
     irmovq $8, %rax
     mulq %rax, %rdi
