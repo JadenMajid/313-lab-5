@@ -90,32 +90,27 @@ swap:
 #     %rax: true if child <= last && heap[highest] < heap[child]
 #
 check_child:
-	pushq  %rbx
-
-	rrmovq %rdi, %rbx       # if child <= last, we can continue
-	subq   %rdx, %rbx
+	rrmovq %rdi, %r11       # if child <= last, we can continue
+	subq   %rdx, %r11
 	jle     check_child_continue
 
 	xorq %rax, %rax
-	popq %rbx
 	ret
 
 check_child_continue:
     irmovq $8, %r8
+	rrmovq %rsi, %r11      # get heap[highest]
     irmovq $1, %rdx
     xorq %rax, %rax
     
     mulq %r8, %rdi
-    rrmovq %rsi, %rbx      # get heap[highest]
-    mulq %r8, %rbx
+    mulq %r8, %r11
 
 	mrmovq heap(%rdi), %rcx
-	mrmovq heap(%rbx), %rbx    
+	mrmovq heap(%r11), %r11    
 
-	subq   %rbx, %rcx      # if heap[child] > heap[highest], return 1
+	subq   %r11, %rcx      # if heap[child] > heap[highest], return 1
 	cmovg  %rdx, %rax
-
-	popq %rbx
 	ret
 
 #
