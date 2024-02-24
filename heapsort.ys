@@ -79,12 +79,8 @@ swap:
 check_child:
 	rrmovq %rdi, %r11       # if child <= last, we can continue
 	subq   %rdx, %r11
-	jle     check_child_continue
+	jg     check_child_end
 
-	xorq %rax, %rax
-	ret
-
-check_child_continue:
     irmovq $8, %r8
 	rrmovq %rsi, %r11      # get heap[highest]
     irmovq $1, %rdx
@@ -100,6 +96,10 @@ check_child_continue:
 	cmovg  %rdx, %rax
 	ret
 
+check_child_end:
+	xorq %rax, %rax
+	ret
+
 #
 # Heapify_node
 #     %rdi: index
@@ -109,7 +109,8 @@ check_child_continue:
 #     %rbx: index
 #     %r12: highest
 #     %r13: last
-#
+#     %r8 : 8
+#     %rdx: 1
 heapify_node:
 	pushq  %rbx             # Save %rbx and use it to store index
 	pushq  %r12
@@ -117,32 +118,75 @@ heapify_node:
 	rrmovq %rdi, %r12       # %r12 = highest
 	rrmovq %rsi, %r13       # %r13 = last
 	rrmovq %rdi, %rbx
+	irmovq $8,   %r8
+	irmovq $1,   %rdx
 
 heapify_loop:
-	irmovq $1,   %r8
 	rrmovq %rbx, %rdi       # left_child = 2 * index + 1
 	addq   %rdi, %rdi
 
-	addq   %r8,  %rdi
+	addq   %rdx,  %rdi
 	rrmovq %r12, %rsi
-	rrmovq %r13, %rdx
 
 	pushq  %rdi             # save this as we'll need it after the call
-	call   check_child
+	#call   check_child
+check_child0:
+	rrmovq %rdi, %r11       # if child <= last, we can continue
+	subq   %r13, %r11
+	jg     check_child_end0
+
+	rrmovq %rsi, %r11      # get heap[highest]
+    xorq %rax, %rax
+    
+    mulq %r8, %rdi
+    mulq %r8, %r11
+
+	mrmovq heap(%rdi), %rcx
+	mrmovq heap(%r11), %r11    
+
+	subq   %r11, %rcx      # if heap[child] > heap[highest], return 1
+	cmovg  %rdx, %rax
+	jmp check_child_ret0
+
+check_child_end0:
+	xorq %rax, %rax
+	
+check_child_ret0:
 	popq   %rdi
 	
 	andq   %rax, %rax
 	cmovne %rdi, %r12  
 
 	rrmovq %rbx, %rdi       # right_child = 2 * index + 2
+	addq   %rdx, %rdi
 	addq   %rdi, %rdi
-	irmovq $2,   %r8	
-	addq   %r8,  %rdi
+
 	rrmovq %r12, %rsi
-	rrmovq %r13, %rdx
 
 	pushq  %rdi             # save this as we'll need it after the call
-	call   check_child
+#	call   check_child
+check_child1:
+	rrmovq %rdi, %r11       # if child <= last, we can continue
+	subq   %r13, %r11
+	jg     check_child_end1
+
+	rrmovq %rsi, %r11      # get heap[highest]
+    xorq %rax, %rax
+    
+    mulq %r8, %rdi
+    mulq %r8, %r11
+
+	mrmovq heap(%rdi), %rcx
+	mrmovq heap(%r11), %r11    
+
+	subq   %r11, %rcx      # if heap[child] > heap[highest], return 1
+	cmovg  %rdx, %rax
+	jmp check_child_ret1
+
+check_child_end1:
+	xorq %rax, %rax
+	
+check_child_ret1:
 	popq  %rdi
 	andq   %rax, %rax
 	cmovne %rdi, %r12
@@ -157,8 +201,6 @@ heapify_loop:
 
 
 	#call   swap
-	
-	irmovq $8, %r8
     mulq %r8, %rdi          # rdi = i1
     mulq %r8, %rsi          # rsi = i2
 
