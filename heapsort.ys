@@ -26,8 +26,8 @@ get_element:
 #	addq   %rdi, %rdi
 #	addq   %rdi, %rdi
 
-    irmovq $8, %rax
-    mulq %rax, %rdi
+    irmovq $8, %r8
+    mulq %r8, %rdi
 
 	mrmovq heap(%rdi), %rax
 	ret
@@ -53,32 +53,19 @@ put_element:
 #    %rdi: index1
 #    %rsi: index2
 #
-swap:	
-	pushq  %r12             # Callee save register
-	pushq  %rsi             # Save these too as we'll need them later
-	pushq  %rdi
+swap:
 	
-    irmovq $8, %rax
-    mulq %rax, %rdi
+	# call   get_element      # tmp = heap[index1]
+	irmovq $8, %r8
+    mulq %r8, %rdi          # rdi = i1
+    mulq %r8, %rsi          # rsi = i2
 
-	mrmovq heap(%rdi), %r12
-	
-	rrmovq %rsi, %rdi       # tmp2 = heap[index2]
-    mulq %rax, %rdi
+	mrmovq heap(%rdi), %r10 #.  r10 = heap[i1]
+	mrmovq heap(%rsi), %r11  #  r11 = heap[i2]
 
-	mrmovq heap(%rdi), %rsi
+    rmmovq %r11, heap(%rdi)
+    rmmovq %r10, heap(%rsi)
 
-	popq   %rdi             # heap[index1] = tmp2
-
-    mulq %rax, %rdi
-	rmmovq %rsi, heap(%rdi)
-
-	popq   %rdi             # heap[index2] = tmp (yes, %rdi not %rsi)
-    mulq %rax, %rdi
-    
-	rmmovq %r12, heap(%rdi)
-
-	popq %r12
 	ret
 
 #
@@ -163,40 +150,26 @@ heapify_loop:
 	rrmovq %r12, %rdi
 	subq   %rbx, %rdi
 	je     heapify_end
-	irmovq $8, %rax
 
 	rrmovq %r12, %rdi
 	rrmovq %rbx, %rsi
 	
 
 
-	# call   swap
-	pushq  %r12             # Callee save register
-	mulq %rax, %rdi
-	pushq  %rbx             # Save these too as we'll need them later
-	pushq  %r12
+	#call   swap
 	
+	irmovq $8, %r8
+    mulq %r8, %rdi          # rdi = i1
+    mulq %r8, %rsi          # rsi = i2
 
-	mrmovq heap(%rdi), %r12
-	
-	rrmovq %rsi, %rdi       # tmp2 = heap[index2]
-    mulq %rax, %rdi
+	mrmovq heap(%rdi), %r10 #.  r10 = heap[i1]
+	mrmovq heap(%rsi), %r11  #  r11 = heap[i2]
 
-	mrmovq heap(%rdi), %rsi
+    rmmovq %r11, heap(%rdi)
+    rmmovq %r10, heap(%rsi)
 
-	popq   %rdi             # heap[index1] = tmp2
 
-    mulq %rax, %rdi
-	rmmovq %rsi, heap(%rdi)
-
-	popq   %rdi             # heap[index2] = tmp (yes, %rdi not %rsi)
-    mulq %rax, %rdi
-    
-	rmmovq %r12, heap(%rdi)
-
-	popq %rbx
-
-	rrmovq %rbx, %r12
+	rrmovq %r12, %rbx
 	jmp    heapify_loop
 
 heapify_end:
